@@ -39,7 +39,7 @@ def gen_and_send_board_pic(board):
 
 def gen_move(s, t):
     """用前端的返回生成 chess.Move"""
-    return chess.Move(s+t)
+    return chess.Move.from_uci(s+t)
 
 
 def judge_legal_move(board, move):
@@ -47,7 +47,17 @@ def judge_legal_move(board, move):
 
 
 def is_it_end(board):
-    if not board.Outcome():
+    if not board.outcome():
         return None
     else:
-        return (board.Outcome().termination, board.Outcome().result, board.Outcome().winner)
+        return (board.outcome().termination, board.outcome().result, board.outcome().winner)
+
+
+if __name__ == "__main__":
+    print(gen_move("e2", "e4"))
+    board = chess.Board()
+    print(judge_legal_move(board, gen_move("e2", "e4")))
+    print(is_it_end(board))
+    board = chess.Board(
+        "r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4")
+    print(is_it_end(board))
