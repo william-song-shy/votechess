@@ -60,6 +60,30 @@ def api_legal():
     return "1"
 
 
+@app.route("/api/apply")
+def api_apply():
+    username = request.args.get("username")
+    password = request.args.get("password")
+    color = request.args.get("color", type=int)
+    if not color in (0, 1):
+        return {"status": "error", "message": "WTF color"}
+    user = User.query.filter(User.username == username).first()
+    if not user:
+        return {"status": "error", "message": "Wrong username"}
+    if not user.validate_password(password):
+        return {"status": "error", "message": "Wrong password"}
+    application = Application.query.filter(
+        Application.game_id == get_game_now().id, Application.user_id == user.id).first()
+    if not application:
+        application = Application(user=user, game=get_game_now(), color=color)
+        db.session.add(application)
+    else:
+        return {"status": "error", "message": "You can't change your color"}
+        application.color = color
+    db.session.commit()
+    return {"status": "success"}
+
+
 @app.route("/api/vote")
 def api_vote():
     move = request.args.get("move")
@@ -98,9 +122,9 @@ def api_count():
         return {"status": "error", "message": "You have no permition"}
     records = Record.query.with_entities(func.min(Record.time).label("mintime"), Record.move, func.count().label(
         "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("mintime"))
-    new_board=get_round_now().make_board()
+    new_board = get_round_now().make_board()
     new_board.push_san(records.first().move)
-    new_round=Round(board=new_board.fen(),game=get_game_now())
+    new_round = Round(board=new_board.fen(), game=get_game_now())
     db.session.add(new_round)
     db.session.commit()
     return str(records.count())
