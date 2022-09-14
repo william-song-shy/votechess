@@ -1,5 +1,5 @@
 import re
-from flask import Flask, request
+from flask import Flask, request, render_template
 from os import environ, path
 from dotenv import load_dotenv
 from db import *
@@ -46,6 +46,11 @@ def get_game_now():
 
 def get_round_now():
     return Round.query.order_by(text("-id")).first()
+
+
+@app.route("/api/board")
+def api_board():
+    return get_round_now().board
 
 
 @app.route("/api/legal")
@@ -128,10 +133,12 @@ def api_count():
     db.session.add(new_round)
     db.session.commit()
     gen_and_send_board_pic(new_board)
-    send_text("{} is chosen with {} votes".format(records.first().move,records.first().count))
+    send_text("{} is chosen with {} votes".format(
+        records.first().move, records.first().count))
     return str(records.count())
 
 
 @app.route("/")
 def main():
+    return render_template("main.html")
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
