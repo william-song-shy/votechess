@@ -27,6 +27,7 @@ def gen_and_send_board_pic(board):
         pic = chess.svg.board(board, lastmove=board.peek())
     else:
         pic = chess.svg.board(board)
+    pic = cairosvg.svg2png(pic)
     b64 = base64.b64encode(pic)
     md5 = hashlib.md5()
     md5.update(pic)
