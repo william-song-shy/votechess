@@ -58,33 +58,36 @@ def api_legal():
         return "-1"
     return "1"
 
-@app.route ("/api/vote")
+
+@app.route("/api/vote")
 def api_vote():
     move = request.args.get("move")
-    username=request.args.get("username")
-    password=request.args.get("password")
-    user=User.query.filter(User.username==username).first()
+    username = request.args.get("username")
+    password = request.args.get("password")
+    user = User.query.filter(User.username == username).first()
     if not user:
-        return {"status":"error","message":"Wrong username"}
+        return {"status": "error", "message": "Wrong username"}
     if not user.validate_password(password):
-        return {"status":"error","message":"Wrong password"}
-    application = Application.query.filter(Application.game_id==get_game_now().id,Application.user_id==user.id).first()
+        return {"status": "error", "message": "Wrong password"}
+    application = Application.query.filter(
+        Application.game_id == get_game_now().id, Application.user_id == user.id).first()
     if not application:
-        return {"status":"error","message":"You didn't sign up"}
+        return {"status": "error", "message": "You didn't sign up"}
     if application.color != get_round_now().make_board().turn:
-        return {"status":"error","message":"It's not your turn"}
+        return {"status": "error", "message": "It's not your turn"}
     try:
         movet = get_round_now().make_board().parse_san(move)
     except ValueError:
-        return {"status":"error","message":"Illegam move"}
-    record=Record.query.filter(Record.user_id==user.id,Record.round_id==get_round_now().id).first()
+        return {"status": "error", "message": "Illegam move"}
+    record = Record.query.filter(
+        Record.user_id == user.id, Record.round_id == get_round_now().id).first()
     if record:
-        record.move=move
+        record.move = move
     else:
-        record=Record(move=move,user=user,round=get_round_now())
+        record = Record(move=move, user=user, round=get_round_now())
         db.session.add(record)
     db.session.commit()
-    return {"status":"success"}
+    return {"status": "success"}
 
 
 @app.route("/")
