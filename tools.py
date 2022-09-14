@@ -6,8 +6,9 @@ import cairosvg
 import base64
 import hashlib
 import requests
+from app import environ
 
-webhook = "damnitidon'thave"
+webhook = environ.get("webhook")
 
 
 def p_info(mes):

@@ -127,6 +127,8 @@ def api_count():
     new_round = Round(board=new_board.fen(), game=get_game_now())
     db.session.add(new_round)
     db.session.commit()
+    gen_and_send_board_pic(new_board)
+    send_text("{} is chosen with {} votes".format(records.first().move,records.first().count))
     return str(records.count())
 
 
