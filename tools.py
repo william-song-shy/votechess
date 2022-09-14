@@ -23,7 +23,7 @@ def send_text(mes, at=[]):
 
 def gen_and_send_board_pic(board):
     """将 board 发到群里"""
-    if len(board.move_stack >= 1):
+    if len(board.move_stack) >= 1:
         pic = chess.svg.board(board, lastmove=board.peek())
     else:
         pic = chess.svg.board(board)
