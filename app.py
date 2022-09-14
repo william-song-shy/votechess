@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from db import *
 from tools import *
 from sqlalchemy.sql import text
+from sqlalchemy import func
 
 
 basedir = path.abspath(path.dirname(__file__))
@@ -88,6 +89,21 @@ def api_vote():
         db.session.add(record)
     db.session.commit()
     return {"status": "success"}
+
+
+@app.route("/api/count")
+def api_count():
+    password = request.args.get("password")
+    if password != environ.get("superadminpassword"):
+        return {"status": "error", "message": "You have no permition"}
+    records = Record.query.with_entities(func.min(Record.time).label("mintime"), Record.move, func.count().label(
+        "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("mintime"))
+    new_board=get_round_now().make_board()
+    new_board.push_san(records.first().move)
+    new_round=Round(board=new_board.fen(),game=get_game_now())
+    db.session.add(new_round)
+    db.session.commit()
+    return str(records.count())
 
 
 @app.route("/")
