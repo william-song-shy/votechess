@@ -51,3 +51,11 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alive = db.Column(db.Boolean, default=True)
     rounds = db.relationship('Round')
+
+class Application (db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', uselist=False, backref='Application')
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
+    game = db.relationship('Game', uselist=False, backref='Application')
+    color=db.Column(db.Boolean)

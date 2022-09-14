@@ -1,3 +1,4 @@
+import re
 from flask import Flask, request
 from os import environ, path
 from dotenv import load_dotenv
@@ -49,11 +50,41 @@ def get_round_now():
 @app.route("/api/legal")
 def api_legal():
     move = request.args.get("move")
+    if move == "resign" or move == "draw":
+        return "1"
     try:
         move = get_round_now().make_board().parse_san(move)
     except ValueError:
         return "-1"
     return "1"
+
+@app.route ("/api/vote")
+def api_vote():
+    move = request.args.get("move")
+    username=request.args.get("username")
+    password=request.args.get("password")
+    user=User.query.filter(User.username==username).first()
+    if not user:
+        return {"status":"error","message":"Wrong username"}
+    if not user.validate_password(password):
+        return {"status":"error","message":"Wrong password"}
+    application = Application.query.filter(Application.game_id==get_game_now().id,Application.user_id==user.id).first()
+    if not application:
+        return {"status":"error","message":"You didn't sign up"}
+    if application.color != get_round_now().make_board().turn:
+        return {"status":"error","message":"It's not your turn"}
+    try:
+        movet = get_round_now().make_board().parse_san(move)
+    except ValueError:
+        return {"status":"error","message":"Illegam move"}
+    record=Record.query.filter(Record.user_id==user.id,Record.round_id==get_round_now().id).first()
+    if record:
+        record.move=move
+    else:
+        record=Record(move=move,user=user,round=get_round_now())
+        db.session.add(record)
+    db.session.commit()
+    return {"status":"success"}
 
 
 @app.route("/")
