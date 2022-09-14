@@ -1,6 +1,7 @@
 # 是时候考虑模块化一些了/cy
 
 import chess
+import chess.svg
 import cairosvg
 import base64
 import hashlib
