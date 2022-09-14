@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import datetime
+from tools import *
 db = SQLAlchemy()
 
 
@@ -27,19 +28,25 @@ def add_user(username):
 
 class Record (db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    move = db.Column(db.String(15))  # 这里用 PNG 格式
+    move = db.Column(db.String(15))  # 这里用 SAN 格式；当然可以接受 resign 和 draw
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', uselist=False, backref='Record')
-    round_id=db.Column(db.Integer, db.ForeignKey('round.id'))
-    round= db.relationship('Round', uselist=False, backref='Record')
-    time=db.Column(db.DateTime,default=datetime.datetime.utcnow)
+    round_id = db.Column(db.Integer, db.ForeignKey('round.id'))
+    round = db.relationship('Round', uselist=False, backref='Record')
+    time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 
 class Round (db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    board = db.Column(db.String(128)) # 这里用 FEN 存
-    game_id=db.Column(db.Integer, db.ForeignKey('game.id'))
-    game= db.relationship('Game', uselist=False, backref='Round')
+    board = db.Column(db.String(128))  # 这里用 FEN 存
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
+    game = db.relationship('Game', uselist=False, backref='Round')
     records = db.relationship('Record')
+
+    def make_board(self):
+        return chess.Board(self.board)
+
+
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alive = db.Column(db.Boolean, default=True)
