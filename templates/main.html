@@ -11,6 +11,9 @@
 </head>
 <script>
     $(document).ready(function () {
+        if (!$.cookie("username")){
+            $("#moveinput").hide();
+        }
         $.get("./api/board", function (data) {
             let config = {
                 pieceTheme: "../static/chessboard/img/chesspieces/wikipedia/{piece}.png",
