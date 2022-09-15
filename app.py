@@ -132,6 +132,8 @@ def api_count():
         return {"status": "error", "message": "You have no permition"}
     records = Record.query.with_entities(func.max(Record.time).label("mintime"), Record.move, func.count().label(
         "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("mintime"))
+    if records.count() == 0:
+        return "-1"
     new_board = get_round_now().make_board()
     new_board.push_san(records.first().move)
     if is_it_end(new_board):
