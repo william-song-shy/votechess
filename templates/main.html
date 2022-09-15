@@ -55,6 +55,36 @@
             setTimeout(function () {
                 $("#login").attr("class", "ui button");
             }, 500)
+        });
+        $("#joinwhite").click(function(){
+            if ($.cookie('username')!=undefined &&$.cookie('password')!=undefined ){
+                $.get("/api/apply",data={color:1,username:$.cookie('username'),password:$.cookie('password') },function(data){
+                    if (data.status=="success"){
+                        swal ("成功",`报名了 White`,"success");
+                    }
+                    else{
+                        swal ("错误",data.message,"error");
+                    }
+                });
+            }
+            else{
+                swal ("错误","请先登录","error");
+            }
+        });
+        $("#joinblack").click(function(){
+            if ($.cookie('username')!=undefined &&$.cookie('password')!=undefined ){
+                $.get("/api/apply",data={color:0,username:$.cookie('username'),password:$.cookie('password') },function(data){
+                    if (data.status=="success"){
+                        swal ("成功",`报名了 Black`,"success");
+                    }
+                    else{
+                        swal ("错误",data.message,"error");
+                    }
+                });
+            }
+            else{
+                swal ("错误","请先登录","error");
+            }
         })
     });
 </script>
@@ -76,5 +106,9 @@
         <button class="ui button" id="login">
             Login
         </button>
+    </div>
+    <div>
+        <button class="ui basic button" id="joinwhite">Join White</button>
+        <button class="ui black button" id="joinblack">Join Black</button>
     </div>
 </body>
