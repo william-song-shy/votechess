@@ -13,13 +13,31 @@
         $.get("./api/board", function (data) {
             let config = {
                 pieceTheme: "../static/chessboard/img/chesspieces/wikipedia/{piece}.png",
-                position: data
-            }
-            var board = Chessboard('board', config)
+                position: data.FEN
+            };
+            var board = Chessboard('board', config);
+            $("#info").text(`${data.turn} to move. Make your choice`);
         })
-    })
+        $("#vote").click(function () {
+            let move = $("#move").val();
+            $.get("./api/legal", data = { move: move }, function (data) {
+                if (data == "-1") {
+                    $("#moveinput").attr("class", "ui action input error");
+                    setTimeout(function () {
+                        $("#moveinput").attr("class", "ui action input");
+                        $("#move").val("")
+                    }, 500)
+                }
+            });
+        })
+    });
 </script>
 
 <body>
     <div id="board" style="width: 400px"></div>
+    <p id="info"></p>
+    <div class="ui action input" id="moveinput">
+        <input type="text" id="move">
+        <button class="ui button" id="vote">Vote!</button>
+    </div>
 </body>
