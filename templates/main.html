@@ -6,6 +6,7 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/semantic-ui/2.4.1/semantic.min.css" rel="stylesheet" />
     <script src="https://cdn.bootcdn.net/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
     <script src="../static/chessboard/js/chessboard-1.0.0.min.js"></script>
     <link href="../static/chessboard/css/chessboard-1.0.0.min.css" rel="stylesheet" />
 </head>
@@ -31,6 +32,19 @@
                         $("#moveinput").attr("class", "ui action input");
                         $("#move").val("")
                     }, 500)
+                }
+                else{
+                    if ($.cookie('username')!=undefined &&$.cookie('password')!=undefined ){
+                        // console.log(move);
+                        $.get("/api/vote",data={move:move,username:$.cookie('username'),password:$.cookie('password') },function(data){
+                            if (data.status=="success"){
+                                swal ("成功",`您投了 ${move}`,"success");
+                            }
+                            else{
+                                swal ("错误",data.message,"error");
+                            }
+                        });
+                    }
                 }
             });
         })

@@ -122,7 +122,7 @@ def api_vote():
     return {"status": "success"}
 
 def game_end (data):
-    send_text("Game ended! {}".format(data[2]))
+    send_text("Game ended! {}".format(data[1]))
     pass  # 先不写
 
 @app.route("/api/count")

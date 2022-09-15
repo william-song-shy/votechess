@@ -53,7 +53,7 @@ def is_it_end(board):
     if not board.outcome():
         return None
     else:
-        return (board.outcome().termination, board.outcome().result, board.outcome().winner)
+        return (board.outcome().termination, board.outcome().result(), board.outcome().winner)
 
 
 if __name__ == "__main__":
