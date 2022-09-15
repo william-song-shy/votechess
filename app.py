@@ -45,6 +45,7 @@ def get_game_now():
 
 
 def get_round_now():
+    get_game_now()
     return Round.query.order_by(text("-id")).first()
 
 
@@ -120,6 +121,9 @@ def api_vote():
     db.session.commit()
     return {"status": "success"}
 
+def game_end (data):
+    send_text("Game ended! {}".format(data[2]))
+    pass  # 先不写
 
 @app.route("/api/count")
 def api_count():
@@ -130,6 +134,20 @@ def api_count():
         "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("mintime"))
     new_board = get_round_now().make_board()
     new_board.push_san(records.first().move)
+    if is_it_end(new_board):
+        gen_and_send_board_pic(new_board)
+        send_text("{} is chosen with {} votes".format(
+        records.first().move, records.first().count))
+        game_end(is_it_end(new_board))
+        get_game_now().alive=False
+        game = Game()
+        db.session.add(game)
+        round = Round()
+        round.board = chess.Board().fen()
+        db.session.add(round)
+        game.rounds.append(round)
+        db.session.commit()
+        return str(records.count())
     new_round = Round(board=new_board.fen(), game=get_game_now())
     db.session.add(new_round)
     db.session.commit()
