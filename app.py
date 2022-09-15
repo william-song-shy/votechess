@@ -1,5 +1,5 @@
 import re
-from flask import Flask, request, render_template,jsonify
+from flask import Flask, request, render_template, jsonify
 from os import environ, path
 from dotenv import load_dotenv
 from db import *
@@ -50,8 +50,8 @@ def get_round_now():
 
 @app.route("/api/board")
 def api_board():
-    board= chess.Board(get_round_now().board)
-    return jsonify({"FEN":board.fen(),"turn": "WHITE" if board.turn else "BLACK"})
+    board = chess.Board(get_round_now().board)
+    return jsonify({"FEN": board.fen(), "turn": "WHITE" if board.turn else "BLACK"})
 
 
 @app.route("/api/legal")
