@@ -107,10 +107,11 @@ def api_vote():
         return {"status": "error", "message": "You didn't sign up"}
     if application.color != get_round_now().make_board().turn:
         return {"status": "error", "message": "It's not your turn"}
-    try:
-        movet = get_round_now().make_board().parse_san(move)
-    except ValueError:
-        return {"status": "error", "message": "Illegam move"}
+    if move != "resign":
+        try:
+            movet = get_round_now().make_board().parse_san(move)
+        except ValueError:
+            return {"status": "error", "message": "Illegam move"}
     record = Record.query.filter(
         Record.user_id == user.id, Record.round_id == get_round_now().id).first()
     if record:
@@ -135,6 +136,20 @@ def api_count():
     if records.count() == 0:
         return "-1"
     new_board = get_round_now().make_board()
+    if records.first().move=="resign":
+        gen_and_send_board_pic(new_board)
+        send_text("{} is chosen with {} vote{}".format(
+        records.first().move, records.first().count,"s" if records.first().count>1 else ""))
+        game_end((None,"1-0" if not new_board.turn else "0-1",None))
+        get_game_now().alive=False
+        game = Game()
+        db.session.add(game)
+        round = Round()
+        round.board = chess.Board().fen()
+        db.session.add(round)
+        game.rounds.append(round)
+        db.session.commit()
+        return str(records.count())
     new_board.push_san(records.first().move)
     if is_it_end(new_board):
         gen_and_send_board_pic(new_board)
