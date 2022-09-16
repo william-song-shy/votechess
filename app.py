@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
-USERNAME = 'songhongyi'
+USERNAME = 'votechess'
 PASSWORD = environ.get('mysqlpassword')
 HOST = '127.0.0.1'
 PORT = '3306'
