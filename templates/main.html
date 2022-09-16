@@ -12,7 +12,7 @@
 </head>
 <script>
     $(document).ready(function () {
-        if (!$.cookie("username")){
+        if (!$.cookie("username")) {
             $("#moveinput").hide();
         }
         $.get("./api/board", function (data) {
@@ -33,22 +33,22 @@
                         $("#move").val("")
                     }, 500)
                 }
-                else{
-                    if ($.cookie('username')!=undefined &&$.cookie('password')!=undefined ){
+                else {
+                    if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
                         // console.log(move);
-                        $.get("/api/vote",data={move:move,username:$.cookie('username'),password:$.cookie('password') },function(data){
-                            if (data.status=="success"){
-                                swal ("成功",`您投了 ${move}`,"success");
+                        $.get("/api/vote", data = { move: move, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                            if (data.status == "success") {
+                                swal("成功", `您投了 ${move}`, "success");
                             }
-                            else{
-                                swal ("错误",data.message,"error");
+                            else {
+                                swal("错误", data.message, "error");
                             }
                         });
                     }
                 }
             });
         })
-        $("#login").click(function(){
+        $("#login").click(function () {
             $.cookie('username', $("#username").val(), { expires: 365 });
             $.cookie('password', $("#password").val(), { expires: 365 });
             $("#login").attr("class", "ui positive button");
@@ -56,34 +56,34 @@
                 $("#login").attr("class", "ui button");
             }, 500)
         });
-        $("#joinwhite").click(function(){
-            if ($.cookie('username')!=undefined &&$.cookie('password')!=undefined ){
-                $.get("/api/apply",data={color:1,username:$.cookie('username'),password:$.cookie('password') },function(data){
-                    if (data.status=="success"){
-                        swal ("成功",`报名了 White`,"success");
+        $("#joinwhite").click(function () {
+            if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
+                $.get("/api/apply", data = { color: 1, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                    if (data.status == "success") {
+                        swal("成功", `报名了 White`, "success");
                     }
-                    else{
-                        swal ("错误",data.message,"error");
+                    else {
+                        swal("错误", data.message, "error");
                     }
                 });
             }
-            else{
-                swal ("错误","请先登录","error");
+            else {
+                swal("错误", "请先登录", "error");
             }
         });
-        $("#joinblack").click(function(){
-            if ($.cookie('username')!=undefined &&$.cookie('password')!=undefined ){
-                $.get("/api/apply",data={color:0,username:$.cookie('username'),password:$.cookie('password') },function(data){
-                    if (data.status=="success"){
-                        swal ("成功",`报名了 Black`,"success");
+        $("#joinblack").click(function () {
+            if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
+                $.get("/api/apply", data = { color: 0, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                    if (data.status == "success") {
+                        swal("成功", `报名了 Black`, "success");
                     }
-                    else{
-                        swal ("错误",data.message,"error");
+                    else {
+                        swal("错误", data.message, "error");
                     }
                 });
             }
-            else{
-                swal ("错误","请先登录","error");
+            else {
+                swal("错误", "请先登录", "error");
             }
         })
     });

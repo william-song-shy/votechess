@@ -122,9 +122,11 @@ def api_vote():
     db.session.commit()
     return {"status": "success"}
 
-def game_end (data):
+
+def game_end(data):
     send_text("Game ended! {}".format(data[1]))
     pass  # 先不写
+
 
 @app.route("/api/count")
 def api_count():
@@ -137,12 +139,12 @@ def api_count():
         send_text("Skipped. No one voted in this round.")
         return "-1"
     new_board = get_round_now().make_board()
-    if records.first().move=="resign":
+    if records.first().move == "resign":
         gen_and_send_board_pic(new_board)
         send_text("{} is chosen with {} vote{}".format(
-        records.first().move, records.first().count,"s" if records.first().count>1 else ""))
-        game_end((None,"1-0" if not new_board.turn else "0-1",None))
-        get_game_now().alive=False
+            records.first().move, records.first().count, "s" if records.first().count > 1 else ""))
+        game_end((None, "1-0" if not new_board.turn else "0-1", None))
+        get_game_now().alive = False
         game = Game()
         db.session.add(game)
         round = Round()
@@ -155,9 +157,9 @@ def api_count():
     if is_it_end(new_board):
         gen_and_send_board_pic(new_board)
         send_text("{} is chosen with {} vote{}}".format(
-        records.first().move, records.first().count,"s" if records.first().count>1 else ""))
+            records.first().move, records.first().count, "s" if records.first().count > 1 else ""))
         game_end(is_it_end(new_board))
-        get_game_now().alive=False
+        get_game_now().alive = False
         game = Game()
         db.session.add(game)
         round = Round()
@@ -171,7 +173,7 @@ def api_count():
     db.session.commit()
     gen_and_send_board_pic(new_board)
     send_text("{} is chosen with {} vote{}".format(
-        records.first().move, records.first().count,("s" if records.first().count>1 else "")))
+        records.first().move, records.first().count, ("s" if records.first().count > 1 else "")))
     return str(records.count())
 
 
