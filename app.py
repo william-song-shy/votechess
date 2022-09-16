@@ -134,6 +134,7 @@ def api_count():
     records = Record.query.with_entities(func.max(Record.time).label("mintime"), Record.move, func.count().label(
         "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("mintime"))
     if records.count() == 0:
+        send_text("Skipped. No one voted in this round.")
         return "-1"
     new_board = get_round_now().make_board()
     if records.first().move=="resign":
