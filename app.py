@@ -134,9 +134,9 @@ def api_count():
     password = request.args.get("password")
     if password != environ.get("superadminpassword"):
         return {"status": "error", "message": "You have no permition"}
-    records = Record.query.with_entities(func.max(Record.time).label("mintime"), Record.move, func.count().label(
-        "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("mintime"))
-    if records.count() == 0:
+    records = Record.query.with_entities(func.max(Record.time).label("maxtime"), Record.move, func.count().label(
+        "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("maxtime"))
+    if records.count == 0:
         send_text("Skipped. No one voted in this round.")
         return "-1"
     new_board = get_round_now().make_board()
