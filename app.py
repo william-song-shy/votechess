@@ -1,15 +1,9 @@
 import re
 from flask import Flask, request, render_template, jsonify
-from os import environ, path
-from dotenv import load_dotenv
 from db import *
 from tools import *
 from sqlalchemy.sql import text
 from sqlalchemy import func, desc
-
-
-basedir = path.abspath(path.dirname(__file__))
-load_dotenv(path.join(basedir, '.env'))
 
 
 app = Flask(__name__)
