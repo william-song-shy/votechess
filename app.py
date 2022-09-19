@@ -116,6 +116,7 @@ def api_vote():
         Record.user_id == user.id, Record.round_id == get_round_now().id).first()
     if record:
         record.move = move
+        record.time = datetime.datetime.utcnow()
     else:
         record = Record(move=move, user=user, round=get_round_now())
         db.session.add(record)
