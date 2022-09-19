@@ -6,7 +6,6 @@ import cairosvg
 import base64
 import hashlib
 import requests
-from app import environ
 from os import environ, path
 from dotenv import load_dotenv
 
