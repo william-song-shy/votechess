@@ -111,7 +111,7 @@ def api_vote():
         try:
             movet = get_round_now().make_board().parse_san(move)
         except ValueError:
-            return {"status": "error", "message": "Illegam move"}
+            return {"status": "error", "message": "Illegal move"}
     record = Record.query.filter(
         Record.user_id == user.id, Record.round_id == get_round_now().id).first()
     if record:
