@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from db import *
 from tools import *
 from sqlalchemy.sql import text
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
 
 basedir = path.abspath(path.dirname(__file__))
@@ -135,7 +135,7 @@ def api_count():
     if password != environ.get("superadminpassword"):
         return {"status": "error", "message": "You have no permition"}
     records = Record.query.with_entities(func.max(Record.time).label("maxtime"), Record.move, func.count().label(
-        "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(text("-count"), text("maxtime"))
+        "count")).filter(Record.round_id == get_round_now().id).group_by(Record.move).order_by(desc(func.count()), text("maxtime"))
     if records.count == 0:
         send_text("Skipped. No one voted in this round.")
         return "-1"
