@@ -4,6 +4,7 @@ from db import *
 from tools import *
 from sqlalchemy.sql import text
 from sqlalchemy import func, desc
+from flask_migrate import Migrate
 
 
 app = Flask(__name__)
@@ -24,6 +25,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 
 def get_game_now():
