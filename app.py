@@ -5,6 +5,7 @@ from tools import *
 from sqlalchemy.sql import text
 from sqlalchemy import func, desc
 from flask_migrate import Migrate
+import chess.pgn
 
 
 app = Flask(__name__)
@@ -122,6 +123,26 @@ def api_vote():
 
 def game_end(data):
     send_text("Game ended! {}".format(data[1]))
+    game = get_game_now()
+    rounds = game.rounds
+    pgngame = chess.pgn.Game()
+    lst = rounds[0]
+    lstnode = pgngame
+    for i in rounds:
+        if i.lastmove is not None and i.lastmove != "resign" and i.lastmove != "draw":
+            move = lst.make_board().parse_san(i.lastmove)
+            lst = i
+            lstnode = lstnode.add_variation(move)
+    if not data[3] == "resign":
+        lstnode = lstnode.add_variation(data[3])
+    else:
+        lstnode.comment = "{} resigned after that".format(
+            "White" if data[2] == "1-0" else "Black")
+    pgngame.headers["Event"] = "VoteChess #{}".format(game.id)
+    pgngame.headers["Site"] = "http://votechess.rotriw.com/"
+    pgngame.headers["Result"] = data[1]
+    url = upload_to_lichess(pgngame)
+    send_text("You can see this round {}".format(url))
     pass  # 先不写
 
 
@@ -141,7 +162,7 @@ def api_count():
         gen_and_send_board_pic(new_board)
         send_text("{} is chosen with {} vote{}".format(
             rf.move, rf.count, "s" if rf.count > 1 else ""))
-        game_end((None, "1-0" if not new_board.turn else "0-1", None))
+        game_end((None, "1-0" if not new_board.turn else "0-1", None, "resign"))
         get_game_now().alive = False
         game = Game()
         db.session.add(game)
@@ -154,7 +175,7 @@ def api_count():
     new_board.push_san(rf.move)
     if is_it_end(new_board):
         gen_and_send_board_pic(new_board)
-        send_text("{} is chosen with {} vote{}}".format(
+        send_text("{} is chosen with {} vote{}".format(
             rf.move, rf.count, "s" if rf.count > 1 else ""))
         game_end(is_it_end(new_board))
         get_game_now().alive = False
@@ -166,7 +187,8 @@ def api_count():
         game.rounds.append(round)
         db.session.commit()
         return str(records.count())
-    new_round = Round(board=new_board.fen(), game=get_game_now())
+    new_round = Round(board=new_board.fen(),
+                      game=get_game_now(), lastmove=rf.move)
     db.session.add(new_round)
     db.session.commit()
     gen_and_send_board_pic(new_board)

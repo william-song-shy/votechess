@@ -39,6 +39,7 @@ class Record (db.Model):
 class Round (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     board = db.Column(db.String(128))  # 这里用 FEN 存
+    lastmove = db.Column(db.String(15))  # 这里用 SAN 格式；当然可以接受 resign 和 draw
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     game = db.relationship('Game', uselist=False, backref='Round')
     records = db.relationship('Record')

@@ -57,7 +57,13 @@ def is_it_end(board):
     if not board.outcome():
         return None
     else:
-        return (board.outcome().termination, board.outcome().result(), board.outcome().winner)
+        return (board.outcome().termination, board.outcome().result(), board.outcome().winner, board.peek())
+
+
+def upload_to_lichess(pgn):
+    data = {"pgn": pgn}
+    r = requests.post("https://lichess.org/api/import", data=data)
+    return r.json()["url"]
 
 
 if __name__ == "__main__":
