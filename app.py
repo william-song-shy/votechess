@@ -173,6 +173,15 @@ def api_count():
     return str(records.count())
 
 
+@app.route("/api/applylist")
+def api_applylist():
+    white_applys = Application.query.filter(
+        Application.game_id == get_game_now().id, Application.color == 1).all()
+    black_applys = Application.query.filter(
+        Application.game_id == get_game_now().id, Application.color == 0).all()
+    return jsonify({"white": [i.user.username for i in white_applys], "black": [i.user.username for i in black_applys]})
+
+
 @app.route("/")
 def main():
     return render_template("main.html")
