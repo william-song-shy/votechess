@@ -90,25 +90,38 @@
 </script>
 
 <body>
-    <div id="board" style="width: 400px"></div>
-    <p id="info"></p>
-    <div class="ui action input" id="moveinput">
-        <input type="text" id="move">
-        <button class="ui button" id="vote">Vote!</button>
-    </div>
-    <div>
-        <div class="ui input">
-            <input type="text" placeholder="Username" id="username">
+    <div class="ui one item menu">
+        <div class="header item" id="info">
         </div>
-        <div class="ui input">
-            <input type="text" placeholder="Password" id="password">
-        </div>
-        <button class="ui button" id="login">
-            Login
-        </button>
     </div>
-    <div>
-        <button class="ui basic button" id="joinwhite">Join White</button>
-        <button class="ui black button" id="joinblack">Join Black</button>
+    <div class="ui container">
+        <div class="ui two column grid">
+            <div class="two column row">
+                <div class="six wide column">
+                    <div id="board" style="width: 400px"></div>
+                </div>
+                <div class="ten wide column">
+                    <div class="ui action input" id="moveinput">
+                        <input type="text" id="move">
+                        <button class="ui button" id="vote">Vote!</button>
+                    </div>
+                    <div>
+                        <div class="ui input">
+                            <input type="text" placeholder="Username" id="username">
+                        </div>
+                        <div class="ui input">
+                            <input type="text" placeholder="Password" id="password">
+                        </div>
+                        <button class="ui button" id="login">
+                            Login
+                        </button>
+                    </div>
+                    <div>
+                        <button class="ui basic button" id="joinwhite">Join White</button>
+                        <button class="ui black button" id="joinblack">Join Black</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
