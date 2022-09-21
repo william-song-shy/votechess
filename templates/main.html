@@ -85,6 +85,20 @@
             else {
                 swal("错误", "请先登录", "error");
             }
+        });
+        if ($.cookie('username') != undefined && $.cookie('password') != undefined){
+            $("#loginform").hide();
+            $("#showlogin").show();
+        }
+        $("#showlogin").click(function(){
+            if ($("#loginform").is(":hidden")){
+                $("#loginform").show();
+                $("#showlogin").text("Hide login");
+            }
+            else{
+                $("#loginform").hide();
+                $("#showlogin").text("Show login");
+            }
         })
     });
 </script>
@@ -105,7 +119,10 @@
                         <input type="text" id="move">
                         <button class="ui button" id="vote">Vote!</button>
                     </div>
-                    <div>
+                    <button class="ui button" id="showlogin" style="display:none;">
+                        Show login
+                    </button>
+                    <div id="loginform">
                         <div class="ui input">
                             <input type="text" placeholder="Username" id="username">
                         </div>
