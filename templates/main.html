@@ -86,21 +86,21 @@
                 swal("错误", "请先登录", "error");
             }
         });
-        if ($.cookie('username') != undefined && $.cookie('password') != undefined){
+        if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
             $("#loginform").hide();
             $("#showlogin").show();
         }
-        else{
+        else {
             // console.log("no cookie");
             $("#joinwhite").hide();
             $("#joinblack").hide();
         }
-        $("#showlogin").click(function(){
-            if ($("#loginform").is(":hidden")){
+        $("#showlogin").click(function () {
+            if ($("#loginform").is(":hidden")) {
                 $("#loginform").show();
                 $("#showlogin").text("Hide login");
             }
-            else{
+            else {
                 $("#loginform").hide();
                 $("#showlogin").text("Show login");
             }
