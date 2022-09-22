@@ -90,7 +90,7 @@
             $("#loginform").hide();
             $("#showlogin").show();
             $.get("/api/applied", data = { username: $.cookie('username'), password: $.cookie('password') }, function (data) {
-                if (data.status != -1) {
+                if (data.result != -1) {
                     $("#joinwhite").hide();
                     $("#joinblack").hide();
                 }
