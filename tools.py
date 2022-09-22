@@ -55,9 +55,10 @@ def is_it_end(board):
 
 
 def upload_to_lichess(pgn):
-    data = {"pgn": pgn}
-    r = requests.post("https://lichess.org/api/import", data=data)
-    return r.json()["url"]
+    data = {"pgn": pgn, "analyse": True}
+    r = requests.post("https://lichess.org/import", data=data, headers={"Authorization": "Bearer {}".format(
+        environ.get("lichess_token"))})
+    return r.url
 
 
 if __name__ == "__main__":
