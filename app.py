@@ -28,11 +28,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
+
 def p_info(mes):
     app.logger.info(mes)
 
+
 def p_warning(mes):
     app.logger.warning(mes)
+
 
 def get_game_now():
     if not Game.query.first():

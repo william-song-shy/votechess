@@ -15,8 +15,6 @@ load_dotenv(path.join(basedir, '.env'))
 webhook = environ.get("webhook")
 
 
-
-
 def send_text(mes, at=[]):
     """往群里发一条消息"""
     data = {"msgtype": "text", "text": {
