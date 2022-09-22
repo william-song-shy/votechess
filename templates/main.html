@@ -90,6 +90,11 @@
             $("#loginform").hide();
             $("#showlogin").show();
         }
+        else{
+            // console.log("no cookie");
+            $("#joinwhite").hide();
+            $("#joinblack").hide();
+        }
         $("#showlogin").click(function(){
             if ($("#loginform").is(":hidden")){
                 $("#loginform").show();
