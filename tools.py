@@ -15,8 +15,6 @@ load_dotenv(path.join(basedir, '.env'))
 webhook = environ.get("webhook")
 
 
-def p_info(mes):
-    print(mes)  # 写了日志再改
 
 
 def send_text(mes, at=[]):
@@ -24,7 +22,6 @@ def send_text(mes, at=[]):
     data = {"msgtype": "text", "text": {
         "content": mes, "mentioned_list": at}}
     r = requests.post(webhook, json=data)
-    p_info(r.text)
 
 
 def gen_and_send_board_pic(board):
@@ -41,7 +38,6 @@ def gen_and_send_board_pic(board):
     data = {"msgtype": "image", "image": {
         "base64": b64.decode("utf-8"), "md5": digest}}
     r = requests.post(webhook, json=data)
-    p_info(r.text)
 
 
 def gen_move(s, t):
