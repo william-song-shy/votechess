@@ -96,6 +96,23 @@ def api_apply():
     return {"status": "success"}
 
 
+@app.route("/api/applied")
+def api_applied():
+    username = request.args.get("username")
+    password = request.args.get("password")
+    user = User.query.filter(User.username == username).first()
+    if not user:
+        return {"status": "error", "message": "Wrong username"}
+    if not user.validate_password(password):
+        return {"status": "error", "message": "Wrong password"}
+    application = Application.query.filter(
+        Application.game_id == get_game_now().id, Application.user_id == user.id).first()
+    if not application:
+        return jsonify({"result": -1})
+    else:
+        return jsonify({"message": int(application.color)})
+
+
 @app.route("/api/vote")
 def api_vote():
     move = request.args.get("move")
@@ -154,7 +171,7 @@ def game_end(data):
     pass  # 先不写
 
 
-@app.route("/api/count")
+@ app.route("/api/count")
 def api_count():
     password = request.args.get("password")
     if password != environ.get("superadminpassword"):
@@ -205,7 +222,7 @@ def api_count():
     return str(records.count())
 
 
-@app.route("/api/applylist")
+@ app.route("/api/applylist")
 def api_applylist():
     white_applys = Application.query.filter(
         Application.game_id == get_game_now().id, Application.color == 1).all()
@@ -214,7 +231,7 @@ def api_applylist():
     return jsonify({"white": [i.user.username for i in white_applys], "black": [i.user.username for i in black_applys]})
 
 
-@app.route("/")
+@ app.route("/")
 def main():
     return render_template("main.html")
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)

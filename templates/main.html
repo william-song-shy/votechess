@@ -89,6 +89,12 @@
         if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
             $("#loginform").hide();
             $("#showlogin").show();
+            $.get("/api/applied", data = { username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                if (data.status != -1) {
+                    $("#joinwhite").hide();
+                    $("#joinblack").hide();
+                }
+            });
         }
         else {
             // console.log("no cookie");
