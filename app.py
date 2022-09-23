@@ -222,16 +222,28 @@ def api_count():
     return str(records.count())
 
 
-@ app.route("/api/applylist")
-def api_applylist():
-    white_applys = Application.query.filter(
-        Application.game_id == get_game_now().id, Application.color == 1).all()
-    black_applys = Application.query.filter(
-        Application.game_id == get_game_now().id, Application.color == 0).all()
-    return jsonify({"white": [i.user.username for i in white_applys], "black": [i.user.username for i in black_applys]})
+@ app.route("/api/current")
+def api_current():
+    game=get_game_now()
+    round=get_round_now()
+    applications=Application.query.filter(Application.game_id==game.id,Application.color==int(round.make_board().turn)).all()
+    # p_info(game.id)
+    # p_info(round.make_board().turn)
+    users=[i.user for i in applications]
+    records=round.records
+    res={}
+    for i in records:
+        res[i.user.username]=i.move
+    for i in users:
+        if res.get(i.username):
+            continue
+        else:
+            res[i.username]=None
+    return jsonify(res)
 
 
 @ app.route("/")
 def main():
     return render_template("main.html")
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
+
