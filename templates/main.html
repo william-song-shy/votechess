@@ -91,15 +91,13 @@
             $("#showlogin").show();
             $.get("/api/applied", data = { username: $.cookie('username'), password: $.cookie('password') }, function (data) {
                 if (data.result != -1) {
-                    $("#joinwhite").hide();
-                    $("#joinblack").hide();
+                    $("#joinform").hide();
                 }
             });
         }
         else {
             // console.log("no cookie");
-            $("#joinwhite").hide();
-            $("#joinblack").hide();
+            $("#joinform").hide();
         }
         $("#showlogin").click(function () {
             if ($("#loginform").is(":hidden")) {
@@ -109,6 +107,12 @@
             else {
                 $("#loginform").hide();
                 $("#showlogin").text("Show login");
+            }
+        })
+        $.get("/api/current",function(data){
+            console.log(data)
+            for (let u in data) {
+                $("#movetable").children("tbody").append(`<tr><td>${u}</td><td>${data[u]?data[u]:"Not voted"}</td></tr>`);
             }
         })
     });
@@ -144,9 +148,30 @@
                             Login
                         </button>
                     </div>
-                    <div>
-                        <button class="ui basic button" id="joinwhite">Join White</button>
-                        <button class="ui black button" id="joinblack">Join Black</button>
+                    <div class="ui two column grid" style="margin-top: 5px; ">
+                        <div class="eight wide column">
+                            <table class="ui single line table" id="movetable">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Move</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="eight wide column">
+                            <div class="ui horizontal segments" id="joinform">
+                                <div class="ui segment">
+                                    <button class="fluid ui basic button" id="joinwhite">Join White</button>
+                                </div>
+                                <div class="ui segment">
+                                    <button class="fluid ui black button" id="joinblack">Join Black</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
