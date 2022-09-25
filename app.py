@@ -224,26 +224,68 @@ def api_count():
 
 @ app.route("/api/current")
 def api_current():
-    game=get_game_now()
-    round=get_round_now()
-    applications=Application.query.filter(Application.game_id==game.id,Application.color==int(round.make_board().turn)).all()
+    game = get_game_now()
+    round = get_round_now()
+    applications = Application.query.filter(
+        Application.game_id == game.id, Application.color == int(round.make_board().turn)).all()
     # p_info(game.id)
     # p_info(round.make_board().turn)
-    users=[i.user for i in applications]
-    records=round.records
-    res={}
+    users = [i.user for i in applications]
+    records = round.records
+    res = {}
     for i in records:
-        res[i.user.username]=i.move
+        res[i.user.username] = i.move
     for i in users:
         if res.get(i.username):
             continue
         else:
-            res[i.username]=None
+            res[i.username] = None
     return jsonify(res)
+
+
+@app.route("/api/message")
+def api_message():
+    username = request.args.get("username")
+    password = request.args.get("password")
+    lastid = request.args.get("lastid", type=int, default=0)
+    user = User.query.filter(User.username == username).first()
+    if not user:
+        return {"status": "error", "message": "Wrong username"}
+    if not user.validate_password(password):
+        return {"status": "error", "message": "Wrong password"}
+    game = get_game_now()
+    application = Application.query.filter(
+        Application.user_id == user.id, Application.game_id == game.id).first()
+    if not application:
+        return {"status": "error", "message": "You are not in this game"}
+    messages = Message.query.join(Message.application, Application.game).filter(
+        Game.id == game.id, Application.color == application.color).filter(Message.id > lastid).limit(10)
+    # p_info(messages)
+    return jsonify([{"id": i.id, "content": i.content, "time": datetime.datetime.timestamp(i.time)} for i in messages.all()])
+
+
+@app.route("/api/send")
+def api_send():
+    username = request.args.get("username")
+    password = request.args.get("password")
+    content = request.args.get("content")
+    user = User.query.filter(User.username == username).first()
+    if not user:
+        return {"status": "error", "message": "Wrong username"}
+    if not user.validate_password(password):
+        return {"status": "error", "message": "Wrong password"}
+    game = get_game_now()
+    application = Application.query.filter(
+        Application.user_id == user.id, Application.game_id == game.id).first()
+    if not application:
+        return {"status": "error", "message": "You are not in this game"}
+    message = Message(content=content, application=application)
+    db.session.add(message)
+    db.session.commit()
+    return {"status": "success"}
 
 
 @ app.route("/")
 def main():
     return render_template("main.html")
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
-

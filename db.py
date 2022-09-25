@@ -61,3 +61,11 @@ class Application (db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     game = db.relationship('Game', uselist=False, backref='Application')
     color = db.Column(db.Boolean)
+
+class Message (db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(256))
+    time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    application_id=db.Column(db.Integer, db.ForeignKey('application.id'))
+    application = db.relationship('Application', uselist=False, backref='Message')
+    
