@@ -138,10 +138,11 @@ def api_vote():
         Record.user_id == user.id, Record.round_id == get_round_now().id).first()
     if record:
         record.move = move
-        record.moveuci= movet.uci() if move != "resign" else "resign"
+        record.moveuci = movet.uci() if move != "resign" else "resign"
         record.time = datetime.datetime.utcnow()
     else:
-        record = Record(move=move, user=user, round=get_round_now(),moveuci= movet.uci() if move != "resign" else "resign")
+        record = Record(move=move, user=user, round=get_round_now(
+        ), moveuci=movet.uci() if move != "resign" else "resign")
         db.session.add(record)
     db.session.commit()
     return {"status": "success"}
@@ -155,7 +156,7 @@ def game_end(data):
     lstnode = pgngame
     for i in rounds:
         if i.lastmove is not None and i.lastmove != "resign" and i.lastmove != "draw":
-            move = chess.Move.from_uci( i.lastmove)
+            move = chess.Move.from_uci(i.lastmove)
             lstnode = lstnode.add_variation(move)
     if not data[3] == "resign":
         lstnode = lstnode.add_variation(data[3])
@@ -175,7 +176,7 @@ def api_count():
     password = request.args.get("password")
     if password != environ.get("superadminpassword"):
         return {"status": "error", "message": "You have no permition"}
-    records = Record.query.with_entities(func.max(Record.time).label("maxtime"), Record.move,Record.moveuci, func.count().label(
+    records = Record.query.with_entities(func.max(Record.time).label("maxtime"), Record.move, Record.moveuci, func.count().label(
         "count")).filter(Record.round_id == get_round_now().id).group_by(Record.moveuci).order_by(desc(func.count()), text("maxtime"))
     if records.count() == 0:
         send_text("Skipped. No one voted in this round.")

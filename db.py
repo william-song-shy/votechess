@@ -29,7 +29,7 @@ def add_user(username):
 class Record (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     move = db.Column(db.String(15))  # 这里用 SAN 格式；当然可以接受 resign 和 draw
-    moveuci=db.Column(db.String(15)) # 这里用 UCI 格式
+    moveuci = db.Column(db.String(15))  # 这里用 UCI 格式
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', uselist=False, backref='Record')
     round_id = db.Column(db.Integer, db.ForeignKey('round.id'))
@@ -63,10 +63,11 @@ class Application (db.Model):
     game = db.relationship('Game', uselist=False, backref='Application')
     color = db.Column(db.Boolean)
 
+
 class Message (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(256))
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    application_id=db.Column(db.Integer, db.ForeignKey('application.id'))
-    application = db.relationship('Application', uselist=False, backref='Message')
-    
+    application_id = db.Column(db.Integer, db.ForeignKey('application.id'))
+    application = db.relationship(
+        'Application', uselist=False, backref='Message')
