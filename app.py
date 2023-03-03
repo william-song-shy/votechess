@@ -6,6 +6,9 @@ from sqlalchemy.sql import text
 from sqlalchemy import func, desc
 from flask_migrate import Migrate
 import chess.pgn
+from sys import platform
+
+DEV = platform == "win32"
 
 
 app = Flask(__name__)
@@ -20,9 +23,10 @@ PORT = '3306'
 DATABASE = 'votechess'
 
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = "{}+{}://{}:{}@{}:{}/{}?charset=utf8".format(
-#    DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = "{}+{}://{}:{}@{}:{}/{}?charset=utf8".format(
+   DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
+if DEV:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
