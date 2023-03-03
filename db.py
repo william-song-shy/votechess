@@ -9,21 +9,24 @@ db = SQLAlchemy()
 class User (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
-    phash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(128))
     records = db.relationship('Record')
+    allowed = db.Column(db.Boolean, default=False)
 
     def validate_password(self, password):
-        return check_password_hash(self.phash, password)
+        return check_password_hash(self.password_hash, password)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
 
-def add_user(username):
-    new_user = User()
-    new_user.username = username
-    pw = uuid.uuid4().hex
-    new_user.phash = generate_password_hash(pw)
-    db.session.add(new_user)
-    db.session.commit()
-    return pw
+class AccountApplication (db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', uselist=False, backref='AccountApplication')
+    allowed = db.Column(db.Boolean, default=False)
+    message = db.Column(db.String(256))
+
 
 
 class Record (db.Model):

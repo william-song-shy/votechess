@@ -1,14 +1,19 @@
 import re
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, flash, redirect, url_for
 from db import *
 from tools import *
 from sqlalchemy.sql import text
 from sqlalchemy import func, desc
 from flask_migrate import Migrate
+from wtforms import SubmitField, StringField, PasswordField
+from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
 import chess.pgn
 
 
 app = Flask(__name__)
+
+app.secret_key = environ.get('sk')
 
 
 DIALECT = 'mysql'
@@ -289,3 +294,26 @@ def api_send():
 def main():
     return render_template("main.html")
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
+
+@ app.route("/account/apply", methods=["GET","POST"])
+def account_apply():
+    class ApplyForm(FlaskForm):
+        username = StringField("Username", validators=[DataRequired()])
+        password = PasswordField("Password", validators=[DataRequired()])
+        message = StringField("Message", validators=[DataRequired()])
+        submit = SubmitField("Submit")
+    form = ApplyForm()
+    if form.validate_on_submit():
+        user = User.query.filter(User.username == form.username.data).first()
+        if user:
+            flash ("Username already exists")
+        user = User(username=form.username.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        application = AccountApplication(user=user,message=form.message.data)
+        db.session.add(application)
+        db.session.commit()
+        flash("Application submitted.Please wait for the administrator to review.")
+        return redirect(url_for("main"))
+    return render_template("account_apply.html",form=form)
