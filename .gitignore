@@ -4,3 +4,4 @@ __pycache__/
 static/chessboard/
 .vscode/
 migrations/
+pm2.json
