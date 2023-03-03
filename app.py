@@ -307,6 +307,7 @@ def account_apply():
         user = User.query.filter(User.username == form.username.data).first()
         if user:
             flash ("Username already exists")
+            return redirect(url_for("main"))
         user = User(username=form.username.data)
         user.set_password(form.password.data)
         db.session.add(user)
