@@ -3,15 +3,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import datetime
 from tools import *
+from flask_login import UserMixin
 db = SQLAlchemy()
 
 
-class User (db.Model):
+class User (UserMixin,db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
     password_hash = db.Column(db.String(128))
     records = db.relationship('Record')
     allowed = db.Column(db.Boolean, default=False)
+
+    # 禁用 allowed 为 False 的用户
+    def is_active(self):
+        return self.allowed
 
     def validate_password(self, password):
         return check_password_hash(self.password_hash, password)
