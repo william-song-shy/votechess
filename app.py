@@ -315,6 +315,9 @@ def account_apply():
 
 @ app.route("/account/login", methods=["GET","POST"])
 def account_login():
+    if current_user.is_authenticated:
+        flash("You are already logged in")
+        return redirect(url_for("main"))
     class LoginForm(FlaskForm):
         username = StringField("Username", validators=[DataRequired()])
         password = PasswordField("Password", validators=[DataRequired()])
