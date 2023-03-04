@@ -17,6 +17,17 @@
             showProgress: 'bottom',
             position: 'top right'
         });
+      {% if current_user.is_authenticated and not current_user.allowed %}
+      $.modal({
+        title: 'Your account is not allowed to vote.',
+        closeIcon: true,
+        content: 'Your account may still be under review or banned by the administrator. Please contact the administrator for more information.',
+        actions: [{
+          text: 'Alright, got it',
+          class: 'green'
+        }]
+      }).modal('show');
+      {% endif %}
         if (!$.cookie("username")) {
             $("#moveinput").hide();
         }
