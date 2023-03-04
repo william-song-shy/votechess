@@ -28,9 +28,9 @@
         }]
       }).modal('show');
       {% endif %}
-        if (!$.cookie("username")) {
-            $("#moveinput").hide();
-        }
+      {% if not current_user.allowed %}
+      $("#moveinput").hide();
+      {% endif %}
         $.get("./api/board", function (data) {
             let config = {
                 pieceTheme: "../static/chessboard/img/chesspieces/wikipedia/{piece}.png",
@@ -50,9 +50,9 @@
                     }, 500)
                 }
                 else {
-                    if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
+
                         // console.log(move);
-                        $.get("/api/vote", data = { move: move, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                        $.get("/api/vote", data = { move: move }, function (data) {
                             if (data.status == "success") {
                                 swal("成功", `您投了 ${move}`, "success");
                             }
@@ -60,21 +60,12 @@
                                 swal("错误", data.message, "error");
                             }
                         });
-                    }
+
                 }
             });
-        })
-        $("#login").click(function () {
-            $.cookie('username', $("#username").val(), { expires: 365 });
-            $.cookie('password', $("#password").val(), { expires: 365 });
-            $("#login").attr("class", "ui positive button");
-            setTimeout(function () {
-                $("#login").attr("class", "ui button");
-            }, 500)
         });
         $("#joinwhite").click(function () {
-            if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
-                $.get("/api/apply", data = { color: 1, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                $.get("/api/apply", data = { color: 1 }, function (data) {
                     if (data.status == "success") {
                         swal("成功", `报名了 White`, "success");
                     }
@@ -82,14 +73,9 @@
                         swal("错误", data.message, "error");
                     }
                 });
-            }
-            else {
-                swal("错误", "请先登录", "error");
-            }
         });
         $("#joinblack").click(function () {
-            if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
-                $.get("/api/apply", data = { color: 0, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                $.get("/api/apply", data = { color: 0 }, function (data) {
                     if (data.status == "success") {
                         swal("成功", `报名了 Black`, "success");
                     }
@@ -97,34 +83,13 @@
                         swal("错误", data.message, "error");
                     }
                 });
-            }
-            else {
-                swal("错误", "请先登录", "error");
-            }
         });
-        if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
-            $("#loginform").hide();
-            $("#showlogin").show();
-            $.get("/api/applied", data = { username: $.cookie('username'), password: $.cookie('password') }, function (data) {
-                if (data.result != -1) {
+            $.get("/api/applied",  function (data) {
+              console.log(data)
+                if (data.result != -1 || data.status == "error") {
                     $("#joinform").hide();
                 }
             });
-        }
-        else {
-            // console.log("no cookie");
-            $("#joinform").hide();
-        }
-        $("#showlogin").click(function () {
-            if ($("#loginform").is(":hidden")) {
-                $("#loginform").show();
-                $("#showlogin").text("Hide login");
-            }
-            else {
-                $("#loginform").hide();
-                $("#showlogin").text("Show login");
-            }
-        })
         $.get("/api/current",function(data){
             console.log(data)
             for (let u in data) {
