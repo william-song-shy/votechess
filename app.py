@@ -286,7 +286,13 @@ def api_send():
 
 @ app.route("/")
 def main():
-    return render_template("main.html")
+    show_apply = False
+    if current_user.is_authenticated:
+        application = Application.query.filter(
+            Application.game_id == get_game_now().id, Application.user_id == current_user.id).first()
+        if not application:
+            show_apply = True
+    return render_template("main.html", show_apply=show_apply)
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
 
 @ app.route("/account/apply", methods=["GET","POST"])

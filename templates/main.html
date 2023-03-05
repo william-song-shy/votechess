@@ -81,12 +81,6 @@
                     }
                 });
         });
-            $.get("/api/applied",  function (data) {
-              console.log(data)
-                if (data.result != -1 || data.status == "error") {
-                    $("#joinform").hide();
-                }
-            });
         $.get("/api/current",function(data){
             console.log(data)
             for (let u in data) {
@@ -134,6 +128,7 @@
                             </table>
                         </div>
                         <div class="eight wide column">
+                            {% if show_apply %}
                             <div class="ui horizontal segments" id="joinform">
                                 <div class="ui segment">
                                     <button class="fluid ui basic button" id="joinwhite">Join White</button>
@@ -142,6 +137,7 @@
                                     <button class="fluid ui black button" id="joinblack">Join Black</button>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
