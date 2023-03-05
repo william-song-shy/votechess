@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link href="https://cdn.bootcdn.net/ajax/libs/semantic-ui/2.4.1/semantic.min.css" rel="stylesheet" />
-    <script src="https://cdn.bootcdn.net/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/fomantic-ui/2.9.0/semantic.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/fomantic-ui/2.9.0/semantic.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
@@ -12,9 +12,22 @@
 </head>
 <script>
     $(document).ready(function () {
-        if (!$.cookie("username")) {
-            $("#moveinput").hide();
-        }
+        $(".toast").toast({
+            displayTime: 3000,
+            showProgress: 'bottom',
+            position: 'top right'
+        });
+      {% if current_user.is_authenticated and not current_user.allowed %}
+      $.modal({
+        title: 'Your account is not allowed to vote.',
+        closeIcon: true,
+        content: 'Your account may still be under review or banned by the administrator. Please contact the administrator for more information.',
+        actions: [{
+          text: 'Alright, got it',
+          class: 'green'
+        }]
+      }).modal('show');
+      {% endif %}
         $.get("./api/board", function (data) {
             let config = {
                 pieceTheme: "../static/chessboard/img/chesspieces/wikipedia/{piece}.png",
@@ -34,9 +47,9 @@
                     }, 500)
                 }
                 else {
-                    if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
+
                         // console.log(move);
-                        $.get("/api/vote", data = { move: move, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                        $.get("/api/vote", data = { move: move }, function (data) {
                             if (data.status == "success") {
                                 swal("成功", `您投了 ${move}`, "success");
                             }
@@ -44,21 +57,12 @@
                                 swal("错误", data.message, "error");
                             }
                         });
-                    }
+
                 }
             });
-        })
-        $("#login").click(function () {
-            $.cookie('username', $("#username").val(), { expires: 365 });
-            $.cookie('password', $("#password").val(), { expires: 365 });
-            $("#login").attr("class", "ui positive button");
-            setTimeout(function () {
-                $("#login").attr("class", "ui button");
-            }, 500)
         });
         $("#joinwhite").click(function () {
-            if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
-                $.get("/api/apply", data = { color: 1, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                $.get("/api/apply", data = { color: 1 }, function (data) {
                     if (data.status == "success") {
                         swal("成功", `报名了 White`, "success");
                     }
@@ -66,14 +70,9 @@
                         swal("错误", data.message, "error");
                     }
                 });
-            }
-            else {
-                swal("错误", "请先登录", "error");
-            }
         });
         $("#joinblack").click(function () {
-            if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
-                $.get("/api/apply", data = { color: 0, username: $.cookie('username'), password: $.cookie('password') }, function (data) {
+                $.get("/api/apply", data = { color: 0 }, function (data) {
                     if (data.status == "success") {
                         swal("成功", `报名了 Black`, "success");
                     }
@@ -81,34 +80,7 @@
                         swal("错误", data.message, "error");
                     }
                 });
-            }
-            else {
-                swal("错误", "请先登录", "error");
-            }
         });
-        if ($.cookie('username') != undefined && $.cookie('password') != undefined) {
-            $("#loginform").hide();
-            $("#showlogin").show();
-            $.get("/api/applied", data = { username: $.cookie('username'), password: $.cookie('password') }, function (data) {
-                if (data.result != -1) {
-                    $("#joinform").hide();
-                }
-            });
-        }
-        else {
-            // console.log("no cookie");
-            $("#joinform").hide();
-        }
-        $("#showlogin").click(function () {
-            if ($("#loginform").is(":hidden")) {
-                $("#loginform").show();
-                $("#showlogin").text("Hide login");
-            }
-            else {
-                $("#loginform").hide();
-                $("#showlogin").text("Show login");
-            }
-        })
         $.get("/api/current",function(data){
             console.log(data)
             for (let u in data) {
@@ -119,35 +91,29 @@
 </script>
 
 <body>
+
     <div class="ui one item menu">
-        <div class="header item" id="info">
+        <div class="header item">
+            <p id="info"></p>
         </div>
     </div>
     <div class="ui container">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+        {% for cat,mes in messages %}
+            <div class="ui {{ cat }} toast"> <div class="content">{{ mes }}</div></div>
+        {% endfor %} {% endif %} {% endwith %}
         <div class="ui two column grid">
             <div class="two column row">
                 <div class="six wide column">
                     <div id="board" style="width: 400px"></div>
                 </div>
                 <div class="ten wide column">
+                    {% if current_user.allowed %}
                     <div class="ui action input" id="moveinput">
                         <input type="text" id="move">
                         <button class="ui button" id="vote">Vote!</button>
                     </div>
-                    <button class="ui button" id="showlogin" style="display:none;">
-                        Show login
-                    </button>
-                    <div id="loginform">
-                        <div class="ui input">
-                            <input type="text" placeholder="Username" id="username">
-                        </div>
-                        <div class="ui input">
-                            <input type="text" placeholder="Password" id="password">
-                        </div>
-                        <button class="ui button" id="login">
-                            Login
-                        </button>
-                    </div>
+                    {% endif %}
                     <div class="ui two column grid" style="margin-top: 5px; ">
                         <div class="eight wide column">
                             <table class="ui single line table" id="movetable">
@@ -163,6 +129,7 @@
                             </table>
                         </div>
                         <div class="eight wide column">
+                            {% if show_apply %}
                             <div class="ui horizontal segments" id="joinform">
                                 <div class="ui segment">
                                     <button class="fluid ui basic button" id="joinwhite">Join White</button>
@@ -171,6 +138,7 @@
                                     <button class="fluid ui black button" id="joinblack">Join Black</button>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

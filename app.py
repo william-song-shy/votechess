@@ -1,10 +1,14 @@
 import re
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, flash, redirect, url_for
 from db import *
 from tools import *
 from sqlalchemy.sql import text
 from sqlalchemy import func, desc
 from flask_migrate import Migrate
+from wtforms import SubmitField, StringField, PasswordField
+from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user,current_user
 import chess.pgn
 from sys import platform
 
@@ -12,6 +16,8 @@ DEV = platform == "win32"
 
 
 app = Flask(__name__)
+
+app.secret_key = environ.get('sk')
 
 
 DIALECT = 'mysql'
@@ -32,6 +38,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = User.query.get(int(user_id))
+    return user
 
 def p_info(mes):
     app.logger.info(mes)
@@ -78,20 +92,17 @@ def api_legal():
 
 @app.route("/api/apply")
 def api_apply():
-    username = request.args.get("username")
-    password = request.args.get("password")
     color = request.args.get("color", type=int)
     if not color in (0, 1):
         return {"status": "error", "message": "WTF color"}
-    user = User.query.filter(User.username == username).first()
-    if not user:
-        return {"status": "error", "message": "Wrong username"}
-    if not user.validate_password(password):
-        return {"status": "error", "message": "Wrong password"}
+    if not current_user.is_authenticated:
+        return {"status": "error", "message": "You are not logged in"}
+    if not current_user.allowed:
+        return {"status": "error", "message": "You are not allowed to play"}
     application = Application.query.filter(
-        Application.game_id == get_game_now().id, Application.user_id == user.id).first()
+        Application.game_id == get_game_now().id, Application.user_id == current_user.id).first()
     if not application:
-        application = Application(user=user, game=get_game_now(), color=color)
+        application = Application(user=current_user, game=get_game_now(), color=color)
         db.session.add(application)
     else:
         return {"status": "error", "message": "You can't change your color"}
@@ -102,15 +113,12 @@ def api_apply():
 
 @app.route("/api/applied")
 def api_applied():
-    username = request.args.get("username")
-    password = request.args.get("password")
-    user = User.query.filter(User.username == username).first()
-    if not user:
-        return {"status": "error", "message": "Wrong username"}
-    if not user.validate_password(password):
-        return {"status": "error", "message": "Wrong password"}
+    if not current_user.is_authenticated:
+        return {"status": "error", "message": "You are not logged in"}
+    if not current_user.allowed:
+        return {"status": "error", "message": "You are not allowed to play"}
     application = Application.query.filter(
-        Application.game_id == get_game_now().id, Application.user_id == user.id).first()
+        Application.game_id == get_game_now().id, Application.user_id == current_user.id).first()
     if not application:
         return jsonify({"result": -1})
     else:
@@ -120,15 +128,12 @@ def api_applied():
 @app.route("/api/vote")
 def api_vote():
     move = request.args.get("move")
-    username = request.args.get("username")
-    password = request.args.get("password")
-    user = User.query.filter(User.username == username).first()
-    if not user:
-        return {"status": "error", "message": "Wrong username"}
-    if not user.validate_password(password):
-        return {"status": "error", "message": "Wrong password"}
+    if not current_user.is_authenticated:
+        return {"status": "error", "message": "You are not logged in"}
+    if not current_user.allowed:
+        return {"status": "error", "message": "You are not allowed to play"}
     application = Application.query.filter(
-        Application.game_id == get_game_now().id, Application.user_id == user.id).first()
+        Application.game_id == get_game_now().id, Application.user_id == current_user.id).first()
     if not application:
         return {"status": "error", "message": "You didn't sign up"}
     if application.color != get_round_now().make_board().turn:
@@ -139,13 +144,13 @@ def api_vote():
         except ValueError:
             return {"status": "error", "message": "Illegal move"}
     record = Record.query.filter(
-        Record.user_id == user.id, Record.round_id == get_round_now().id).first()
+        Record.user_id == current_user.id, Record.round_id == get_round_now().id).first()
     if record:
         record.move = move
         record.moveuci = movet.uci() if move != "resign" else "resign"
         record.time = datetime.datetime.utcnow()
     else:
-        record = Record(move=move, user=user, round=get_round_now(
+        record = Record(move=move, user=current_user, round=get_round_now(
         ), moveuci=movet.uci() if move != "resign" else "resign")
         db.session.add(record)
     db.session.commit()
@@ -249,17 +254,14 @@ def api_current():
 
 @app.route("/api/message")
 def api_message():
-    username = request.args.get("username")
-    password = request.args.get("password")
     lastid = request.args.get("lastid", type=int, default=0)
-    user = User.query.filter(User.username == username).first()
-    if not user:
-        return {"status": "error", "message": "Wrong username"}
-    if not user.validate_password(password):
-        return {"status": "error", "message": "Wrong password"}
+    if not current_user.is_authenticated:
+        return {"status": "error", "message": "You are not logged in"}
+    if not current_user.allowed:
+        return {"status": "error", "message": "You are not allowed to send message"}
     game = get_game_now()
     application = Application.query.filter(
-        Application.user_id == user.id, Application.game_id == game.id).first()
+        Application.user_id == current_user.id, Application.game_id == game.id).first()
     if not application:
         return {"status": "error", "message": "You are not in this game"}
     messages = Message.query.join(Message.application, Application.game).filter(
@@ -270,17 +272,14 @@ def api_message():
 
 @app.route("/api/send")
 def api_send():
-    username = request.args.get("username")
-    password = request.args.get("password")
     content = request.args.get("content")
-    user = User.query.filter(User.username == username).first()
-    if not user:
-        return {"status": "error", "message": "Wrong username"}
-    if not user.validate_password(password):
-        return {"status": "error", "message": "Wrong password"}
+    if not current_user.is_authenticated:
+        return {"status": "error", "message": "You are not logged in"}
+    if not current_user.allowed:
+        return {"status": "error", "message": "You are not allowed to send message"}
     game = get_game_now()
     application = Application.query.filter(
-        Application.user_id == user.id, Application.game_id == game.id).first()
+        Application.user_id == current_user.id, Application.game_id == game.id).first()
     if not application:
         return {"status": "error", "message": "You are not in this game"}
     message = Message(content=content, application=application)
@@ -291,5 +290,65 @@ def api_send():
 
 @ app.route("/")
 def main():
-    return render_template("main.html")
+    show_apply = False
+    if current_user.is_authenticated:
+        application = Application.query.filter(
+            Application.game_id == get_game_now().id, Application.user_id == current_user.id).first()
+        if not application:
+            show_apply = True
+    return render_template("main.html", show_apply=show_apply)
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
+
+@ app.route("/account/apply", methods=["GET","POST"])
+def account_apply():
+    class ApplyForm(FlaskForm):
+        username = StringField("Username", validators=[DataRequired()])
+        password = PasswordField("Password", validators=[DataRequired()])
+        message = StringField("Message", validators=[DataRequired()])
+        submit = SubmitField("Submit")
+    form = ApplyForm()
+    if form.validate_on_submit():
+        user = User.query.filter(User.username == form.username.data).first()
+        if user:
+            flash ("Username already exists",category="error")
+            return redirect(url_for("main"))
+        user = User(username=form.username.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        application = AccountApplication(user=user,message=form.message.data)
+        db.session.add(application)
+        db.session.commit()
+        flash("Application submitted.Please wait for the administrator to review.",category="success")
+        return redirect(url_for("main"))
+    return render_template("account_apply.html",form=form)
+
+@ app.route("/account/login", methods=["GET","POST"])
+def account_login():
+    if current_user.is_authenticated:
+        flash("You are already logged in",category="error")
+        return redirect(url_for("main"))
+    class LoginForm(FlaskForm):
+        username = StringField("Username", validators=[DataRequired()])
+        password = PasswordField("Password", validators=[DataRequired()])
+        submit = SubmitField("Submit")
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter(User.username == form.username.data).first()
+        if user and user.validate_password(form.password.data):
+            login_user(user)
+            flash("Login successfully",category="success")
+            return redirect(url_for("main"))
+        else:
+            flash("Username or password is wrong",category="error")
+            return redirect(url_for("main"))
+    return render_template("account_login.html",form=form)
+
+@ app.route("/account/logout")
+def account_logout():
+    if not current_user.is_authenticated:
+        flash("You are not logged in",category="error")
+        return redirect(url_for("main"))
+    logout_user()
+    flash("Logout successfully",category="success")
+    return redirect(url_for("main"))
