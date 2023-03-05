@@ -14,9 +14,6 @@ class User (UserMixin,db.Model):
     records = db.relationship('Record')
     allowed = db.Column(db.Boolean, default=False)
 
-    # 禁用 allowed 为 False 的用户
-    def is_active(self):
-        return self.allowed
 
     def validate_password(self, password):
         return check_password_hash(self.password_hash, password)
