@@ -100,16 +100,16 @@
 </script>
 
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
-    {% for cat,mes in messages %}
-        <div class="ui toast"> <div class="content">{{ mes }}</div></div>
-    {% endfor %} {% endif %} {% endwith %}
 
     <div class="ui one item menu">
         <div class="header item" id="info">
         </div>
     </div>
     <div class="ui container">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+        {% for cat,mes in messages %}
+            <div class="ui toast"> <div class="content">{{ mes }}</div></div>
+        {% endfor %} {% endif %} {% endwith %}
         <div class="ui two column grid">
             <div class="two column row">
                 <div class="six wide column">
