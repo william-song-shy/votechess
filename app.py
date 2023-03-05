@@ -306,7 +306,7 @@ def account_apply():
     if form.validate_on_submit():
         user = User.query.filter(User.username == form.username.data).first()
         if user:
-            flash ("Username already exists")
+            flash ("Username already exists",category="error")
             return redirect(url_for("main"))
         user = User(username=form.username.data)
         user.set_password(form.password.data)
@@ -315,14 +315,14 @@ def account_apply():
         application = AccountApplication(user=user,message=form.message.data)
         db.session.add(application)
         db.session.commit()
-        flash("Application submitted.Please wait for the administrator to review.")
+        flash("Application submitted.Please wait for the administrator to review.",category="success")
         return redirect(url_for("main"))
     return render_template("account_apply.html",form=form)
 
 @ app.route("/account/login", methods=["GET","POST"])
 def account_login():
     if current_user.is_authenticated:
-        flash("You are already logged in")
+        flash("You are already logged in",category="error")
         return redirect(url_for("main"))
     class LoginForm(FlaskForm):
         username = StringField("Username", validators=[DataRequired()])
@@ -333,18 +333,18 @@ def account_login():
         user = User.query.filter(User.username == form.username.data).first()
         if user and user.validate_password(form.password.data):
             login_user(user)
-            flash("Login successfully")
+            flash("Login successfully",category="success")
             return redirect(url_for("main"))
         else:
-            flash("Username or password is wrong")
+            flash("Username or password is wrong",category="error")
             return redirect(url_for("main"))
     return render_template("account_login.html",form=form)
 
 @ app.route("/account/logout")
 def account_logout():
     if not current_user.is_authenticated:
-        flash("You are not logged in")
+        flash("You are not logged in",category="error")
         return redirect(url_for("main"))
     logout_user()
-    flash("Logout successfully")
+    flash("Logout successfully",category="success")
     return redirect(url_for("main"))
