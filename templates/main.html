@@ -28,9 +28,6 @@
         }]
       }).modal('show');
       {% endif %}
-      {% if not current_user.allowed %}
-      $("#moveinput").hide();
-      {% endif %}
         $.get("./api/board", function (data) {
             let config = {
                 pieceTheme: "../static/chessboard/img/chesspieces/wikipedia/{piece}.png",
@@ -116,10 +113,12 @@
                     <div id="board" style="width: 400px"></div>
                 </div>
                 <div class="ten wide column">
+                    {% if current_user.allowed %}
                     <div class="ui action input" id="moveinput">
                         <input type="text" id="move">
                         <button class="ui button" id="vote">Vote!</button>
                     </div>
+                    {% endif %}
                     <div class="ui two column grid" style="margin-top: 5px; ">
                         <div class="eight wide column">
                             <table class="ui single line table" id="movetable">
