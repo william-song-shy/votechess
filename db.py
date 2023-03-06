@@ -4,16 +4,16 @@ import uuid
 import datetime
 from tools import *
 from flask_login import UserMixin
+
 db = SQLAlchemy()
 
 
-class User (UserMixin,db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
     password_hash = db.Column(db.String(128))
     records = db.relationship('Record')
     allowed = db.Column(db.Boolean, default=False)
-
 
     def validate_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -22,7 +22,7 @@ class User (UserMixin,db.Model):
         self.password_hash = generate_password_hash(password)
 
 
-class AccountApplication (db.Model):
+class AccountApplication(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', uselist=False, backref='AccountApplication')
@@ -30,8 +30,7 @@ class AccountApplication (db.Model):
     message = db.Column(db.String(256))
 
 
-
-class Record (db.Model):
+class Record(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     move = db.Column(db.String(15))  # 这里用 SAN 格式；当然可以接受 resign 和 draw
     moveuci = db.Column(db.String(15))  # 这里用 UCI 格式
@@ -42,7 +41,7 @@ class Record (db.Model):
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 
-class Round (db.Model):
+class Round(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     board = db.Column(db.String(128))  # 这里用 FEN 存
     lastmove = db.Column(db.String(15))  # 这里用 UCI 格式；当然可以接受 resign 和 draw
@@ -60,7 +59,7 @@ class Game(db.Model):
     rounds = db.relationship('Round')
 
 
-class Application (db.Model):
+class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', uselist=False, backref='Application')
@@ -69,7 +68,7 @@ class Application (db.Model):
     color = db.Column(db.Boolean)
 
 
-class Message (db.Model):
+class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(256))
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)

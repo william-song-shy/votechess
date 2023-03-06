@@ -8,17 +8,15 @@ from flask_migrate import Migrate
 from wtforms import SubmitField, StringField, PasswordField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user,current_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import chess.pgn
 from sys import platform
 
 DEV = platform == "win32"
 
-
 app = Flask(__name__)
 
 app.secret_key = environ.get('sk')
-
 
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
@@ -28,11 +26,10 @@ HOST = '127.0.0.1'
 PORT = '3306'
 DATABASE = 'votechess'
 
-
 app.config['SQLALCHEMY_DATABASE_URI'] = "{}+{}://{}:{}@{}:{}/{}?charset=utf8".format(
-   DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
+    DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
 if DEV:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.root_path + '/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -42,10 +39,12 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+
 @login_manager.user_loader
 def load_user(user_id):
     user = User.query.get(int(user_id))
     return user
+
 
 def p_info(mes):
     app.logger.info(mes)
@@ -180,13 +179,15 @@ def game_end(data):
     pass  # 先不写
 
 
-@ app.route("/api/count")
+@app.route("/api/count")
 def api_count():
     password = request.args.get("password")
     if password != environ.get("superadminpassword"):
         return {"status": "error", "message": "You have no permition"}
-    records = Record.query.with_entities(func.max(Record.time).label("maxtime"), Record.move, Record.moveuci, func.count().label(
-        "count")).filter(Record.round_id == get_round_now().id).group_by(Record.moveuci).order_by(desc(func.count()), text("maxtime"))
+    records = Record.query.with_entities(func.max(Record.time).label("maxtime"), Record.move, Record.moveuci,
+                                         func.count().label(
+                                             "count")).filter(Record.round_id == get_round_now().id).group_by(
+        Record.moveuci).order_by(desc(func.count()), text("maxtime"))
     if records.count() == 0:
         send_text("Skipped. No one voted in this round.")
         return "-1"
@@ -231,7 +232,7 @@ def api_count():
     return str(records.count())
 
 
-@ app.route("/api/current")
+@app.route("/api/current")
 def api_current():
     game = get_game_now()
     round = get_round_now()
@@ -267,7 +268,8 @@ def api_message():
     messages = Message.query.join(Message.application, Application.game).filter(
         Game.id == game.id, Application.color == application.color).filter(Message.id > lastid).limit(10)
     # p_info(messages)
-    return jsonify([{"id": i.id, "content": i.content, "time": datetime.datetime.timestamp(i.time)} for i in messages.all()])
+    return jsonify(
+        [{"id": i.id, "content": i.content, "time": datetime.datetime.timestamp(i.time)} for i in messages.all()])
 
 
 @app.route("/api/send")
@@ -288,7 +290,7 @@ def api_send():
     return {"status": "success"}
 
 
-@ app.route("/")
+@app.route("/")
 def main():
     show_apply = False
     if current_user.is_authenticated:
@@ -299,56 +301,62 @@ def main():
     return render_template("main.html", show_apply=show_apply)
     return "game:{}\n round:{}".format(get_game_now().id, get_round_now().id)
 
-@ app.route("/account/apply", methods=["GET","POST"])
+
+@app.route("/account/apply", methods=["GET", "POST"])
 def account_apply():
     class ApplyForm(FlaskForm):
         username = StringField("Username", validators=[DataRequired()])
         password = PasswordField("Password", validators=[DataRequired()])
         message = StringField("Message", validators=[DataRequired()])
         submit = SubmitField("Submit")
+
     form = ApplyForm()
     if form.validate_on_submit():
         user = User.query.filter(User.username == form.username.data).first()
         if user:
-            flash ("Username already exists",category="error")
+            flash("Username already exists", category="error")
             return redirect(url_for("main"))
         user = User(username=form.username.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        application = AccountApplication(user=user,message=form.message.data)
+        application = AccountApplication(user=user, message=form.message.data)
         db.session.add(application)
         db.session.commit()
-        flash("Application submitted.Please wait for the administrator to review.",category="success")
+        flash("Application submitted.Please wait for the administrator to review.", category="success")
         return redirect(url_for("main"))
-    return render_template("account_apply.html",form=form)
+    return render_template("account_apply.html", form=form)
 
-@ app.route("/account/login", methods=["GET","POST"])
+
+@app.route("/account/login", methods=["GET", "POST"])
 def account_login():
     if current_user.is_authenticated:
-        flash("You are already logged in",category="error")
+        flash("You are already logged in", category="error")
         return redirect(url_for("main"))
+
     class LoginForm(FlaskForm):
         username = StringField("Username", validators=[DataRequired()])
         password = PasswordField("Password", validators=[DataRequired()])
         submit = SubmitField("Submit")
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter(User.username == form.username.data).first()
         if user and user.validate_password(form.password.data):
             login_user(user)
-            flash("Login successfully",category="success")
+            flash("Login successfully", category="success")
             return redirect(url_for("main"))
         else:
-            flash("Username or password is wrong",category="error")
+            flash("Username or password is wrong", category="error")
             return redirect(url_for("main"))
-    return render_template("account_login.html",form=form)
+    return render_template("account_login.html", form=form)
 
-@ app.route("/account/logout")
+
+@app.route("/account/logout")
 def account_logout():
     if not current_user.is_authenticated:
-        flash("You are not logged in",category="error")
+        flash("You are not logged in", category="error")
         return redirect(url_for("main"))
     logout_user()
-    flash("Logout successfully",category="success")
+    flash("Logout successfully", category="success")
     return redirect(url_for("main"))
