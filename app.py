@@ -89,11 +89,13 @@ def api_legal():
     return "1"
 
 
-@app.route("/api/apply")
+@app.route("/api/apply", methods=['POST'])
 def api_apply():
-    color = request.args.get("color", type=int)
-    if not color in (0, 1):
+    color = request.form.get("color")
+    if not color in ('0', '1'):
         return {"status": "error", "message": "WTF color"}
+    else:
+        color=int(color)
     if not current_user.is_authenticated:
         return {"status": "error", "message": "You are not logged in"}
     if not current_user.allowed:
@@ -124,9 +126,9 @@ def api_applied():
         return jsonify({"message": int(application.color)})
 
 
-@app.route("/api/vote")
+@app.route("/api/vote",methods=['POST'])
 def api_vote():
-    move = request.args.get("move")
+    move = request.form.get("move")
     if not current_user.is_authenticated:
         return {"status": "error", "message": "You are not logged in"}
     if not current_user.allowed:
@@ -272,9 +274,9 @@ def api_message():
         [{"id": i.id, "content": i.content, "time": datetime.datetime.timestamp(i.time)} for i in messages.all()])
 
 
-@app.route("/api/send")
+@app.route("/api/send", methods=["POST"])
 def api_send():
-    content = request.args.get("content")
+    content = request.form.get("content")
     if not current_user.is_authenticated:
         return {"status": "error", "message": "You are not logged in"}
     if not current_user.allowed:

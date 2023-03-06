@@ -52,7 +52,7 @@
                 else {
 
                         // console.log(move);
-                        $.get("/api/vote", data = { move: move }, function (data) {
+                        $.post("/api/vote", data = { move: move }, function (data) {
                             if (data.status == "success") {
                                 swal("成功", `您投了 ${move}`, "success");
                             }
@@ -65,7 +65,7 @@
             });
         });
         $("#joinwhite").click(function () {
-                $.get("/api/apply", data = { color: 1 }, function (data) {
+                $.post("/api/apply", data = { color: 1 }, function (data) {
                     if (data.status == "success") {
                         swal("成功", `报名了 White`, "success");
                     }
@@ -75,7 +75,7 @@
                 });
         });
         $("#joinblack").click(function () {
-                $.get("/api/apply", data = { color: 0 }, function (data) {
+                $.post("/api/apply", data = { color: 0 }, function (data) {
                     if (data.status == "success") {
                         swal("成功", `报名了 Black`, "success");
                     }
