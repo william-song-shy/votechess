@@ -37,6 +37,9 @@
                 position: data.FEN
             };
             var board = Chessboard('board', config);
+            if (data.turn === "BLACK"){
+              board.flip();
+            }
             $("#info").text(`${data.turn} to move. Make your choice`);
         })
         $("#vote").click(function () {
