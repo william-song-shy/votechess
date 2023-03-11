@@ -257,7 +257,7 @@ def api_current():
 
 @app.route("/api/message")
 def api_message():
-    lastid = request.args.get("lastid", type=int, default=0)
+    lastid = request.args.get("lastid", type=int, default=1e10)
     if not current_user.is_authenticated:
         return {"status": "error", "message": "You are not logged in"}
     if not current_user.allowed:
@@ -268,7 +268,7 @@ def api_message():
     if not application:
         return {"status": "error", "message": "You are not in this game"}
     messages = Message.query.join(Message.application, Application.game).filter(
-        Game.id == game.id, Application.color == application.color).filter(Message.id > lastid).limit(10)
+        Game.id == game.id, Application.color == application.color).filter(Message.id < lastid).order_by(Message.id.desc()).limit(10)
     # p_info(messages)
     return jsonify(
         [{"id": i.id, "content": i.content, "time": datetime.datetime.timestamp(i.time)} for i in messages.all()])
