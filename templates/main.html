@@ -13,8 +13,53 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Saira:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 </head>
 <script>
+    function refresh_talk () {
+        $.get("/api/message",function(data){
+            $("#talk").empty();
+            for (let i in data) {
+                $("#talk").append(`
+                    <div class="ui segment">
+                        <div class="comment" data-id="${data[i].id}">
+                            <div class="content">
+                                <a class="author">${data[i].username}</a>
+                                <div class="metadata">
+                                    <span class="date">${moment.utc(data[i].time).fromNow()}</span>
+                                </div>
+                                <div class="text">
+                                    ${data[i].content}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+        });
+    }
+    function loadmore_talk (){
+        let lastid=$("#talk").children().last().children().first().attr("data-id");
+        $.get("/api/message",data= {lastid:lastid}, function (data){
+            for (let i in data) {
+                $("#talk").append(`
+                    <div class="ui segment">
+                        <div class="comment" data-id="${data[i].id}">
+                            <div class="content">
+                                <a class="author">${data[i].username}</a>
+                                <div class="metadata">
+                                    <span class="date">${moment.utc(data[i].time).fromNow()}</span>
+                                </div>
+                                <div class="text">
+                                    ${data[i].content}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+        })
+    }
     $(document).ready(function () {
         $(".toast").toast({
             displayTime: 3000,
@@ -93,6 +138,39 @@
             for (let u in data) {
                 $("#movetable").children("tbody").append(`<tr><td>${u}</td><td>${data[u]?data[u]:"Not voted"}</td></tr>`);
             }
+        });
+        $('.tabular.menu .item').tab();
+        $("#talk_submit").click(function (){
+            let content = $("#talk_input").val();
+            $.post("/api/send",data={content:content},function(data){
+                if (data.status == "success") {
+                  $.toast({
+                    message: 'Message sent',
+                    class: 'success'
+                  });
+                  $("#talk_input").val("");
+                  refresh_talk();
+                }
+                else {
+                  $.toast({
+                    message: 'Message failed to send',
+                    class: 'error'
+                  });
+                }
+            });
+        });
+        $("#talk_refresh").click(function (){
+            refresh_talk();
+        });
+        {% if not current_user.allowed or show_apply %}
+            $(".dimmer").dimmer("show");
+        {% endif %}
+        refresh_talk();
+        $("#talk").parent().scroll(function (){
+          {#console.log($(this).scrollTop() + $(this).innerHeight() , $("#talk")[0].scrollHeight);#}
+            if ($(this).scrollTop() + $(this).innerHeight() >= $("#talk")[0].scrollHeight){
+                loadmore_talk();
+            }
         })
     });
 </script>
@@ -133,15 +211,15 @@
                     <div id="board" style="width: 400px"></div>
                 </div>
                 <div class="ten wide column">
-                <p id="info" style="font-weight: bold; margin-bottom: 1em;"></p>
-                    {% if current_user.allowed %}
-                    <div class="ui action input" id="moveinput">
-                        <input type="text" id="move">
-                        <button class="ui button" id="vote">Vote!</button>
-                    </div>
-                    {% endif %}
                     <div class="ui two column grid" style="margin-top: 5px; ">
                         <div class="eight wide column">
+                            <p id="info" style="font-weight: bold; margin-bottom: 1em;"></p>
+                            {% if current_user.allowed %}
+                            <div class="ui action input" id="moveinput">
+                                <input type="text" id="move">
+                                <button class="ui button" id="vote">Vote!</button>
+                            </div>
+                            {% endif %}
                             <table class="ui single line table" id="movetable">
                                 <thead>
                                     <tr>
@@ -155,6 +233,33 @@
                             </table>
                         </div>
                         <div class="eight wide column">
+                            <div class="ui tabular menu" style="margin-bottom: unset;">
+                                <div class="item" data-tab="talk">Talk</div>
+                                <div class="item" data-tab="Setting">Setting</div>
+                            </div>
+                            <div class="ui tab" data-tab="talk">
+                                <div class="ui raised segment">
+                                    <div class="ui basic segment" style="height: 300px;overflow: auto;">
+                                        <div class="ui comments" id="talk">
+                                        </div>
+                                    </div>
+                                    {% if current_user.is_authenticated %}
+                                        <div class="ui fluid action input">
+                                            <button class="ui icon button" id="talk_refresh"><i class="sync icon"></i></button>
+                                            <input type="text" id="talk_input">
+                                                <button class="ui primary button" id="talk_submit">Send</button>
+                                        </div>
+                                    {% endif %}
+                                    <div class="ui inverted dimmer">
+                                        <div class="content">
+                                          <h2 class="ui icon header">
+                                            <i class="lock icon"></i>
+                                                Only the users who have joined the game can talk.
+                                          </h2>
+                                        </div>
+                                      </div>
+                                </div>
+                            </div>
                             {% if show_apply %}
                             <div class="ui horizontal segments" id="joinform">
                                 <div class="ui segment">

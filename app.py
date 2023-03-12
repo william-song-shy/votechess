@@ -267,11 +267,11 @@ def api_message():
         Application.user_id == current_user.id, Application.game_id == game.id).first()
     if not application:
         return {"status": "error", "message": "You are not in this game"}
-    messages = Message.query.join(Message.application, Application.game).filter(
+    messages = Message.query.join(Message.application, Application.game, Application.user).filter(
         Game.id == game.id, Application.color == application.color).filter(Message.id < lastid).order_by(Message.id.desc()).limit(10)
     # p_info(messages)
     return jsonify(
-        [{"id": i.id, "content": i.content, "time": datetime.datetime.timestamp(i.time)} for i in messages.all()])
+        [{"id": i.id, "content": i.content, "time": i.time, "username": i.application.user.username} for i in messages.all()])
 
 
 @app.route("/api/send", methods=["POST"])
